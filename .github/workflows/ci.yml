@@ -25,5 +25,7 @@ jobs:
         run: uv sync
       - name: Run tests
         run: uv run pytest
-      - name: Check visualiser CLI
-        run: uv run agario-local-match --help
+      - name: Check interactive CLI
+        run: uv run interactive --help
+      - name: Check simulation CLI
+        run: uv run simulation --help

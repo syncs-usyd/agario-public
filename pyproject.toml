@@ -1,6 +1,6 @@
 [project]
 name = "agario-kit"
-version = "2026.1.0"
+version = "2026.1.1"
 description = "Public Agar.io competition package"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -10,10 +10,9 @@ dependencies = [
 ]
 
 [project.scripts]
-agario-engine = "engine.__main__:main"
-engine = "engine.__main__:main"
-agario-local-match = "agario_visualiser.launch_local_match:main"
-agario-visualiser-submission = "agario_visualiser.visualiser_submission:main"
+private-engine = "engine.__main__:main"
+interactive = "agario_visualiser.launch_local_match:interactive_main"
+simulation = "agario_visualiser.launch_local_match:simulation_main"
 
 [build-system]
 requires = ["hatchling"]

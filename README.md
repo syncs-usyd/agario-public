@@ -34,5 +34,6 @@ tests/
 ```bash
 uv sync
 uv run pytest
-uv run agario-local-match --submission examples/submissions/bot_1.py --submission examples/submissions/bot_2.py --submission examples/submissions/aggressive.py --masquerade
+uv run interactive 2:examples/submissions/cautious.py 1:examples/submissions/dont_move.py
+uv run simulation 3:examples/submissions/cautious.py 1:examples/submissions/dont_move.py
 ```

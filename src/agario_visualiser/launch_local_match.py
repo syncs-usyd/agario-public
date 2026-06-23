@@ -19,25 +19,28 @@ from lib.config.arena import NUM_PLAYERS
 PIPE_PERMISSIONS = 0o660
 DIRECTORY_PERMISSIONS = 0o775
 START_DELAY_SECONDS = 3.0
-DEFAULT_WORKSPACE = Path(".agario") / "local-match"
 
 
 def default_submission_path() -> Path:
     return Path(str(files("agario_visualiser.examples").joinpath("example.py"))).resolve()
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(mode: str) -> argparse.Namespace:
+    default_workspace = Path(".agario") / mode
+    expected = NUM_PLAYERS - 1 if mode == "interactive" else NUM_PLAYERS
     parser = argparse.ArgumentParser(
-        description="Run a local Agar.io match with the public visualiser as one player."
+        description=(
+            "Run a local Agar.io match in interactive mode."
+            if mode == "interactive"
+            else "Run a local Agar.io match in simulation mode."
+        )
     )
     parser.add_argument(
-        "--submission",
-        action="append",
-        default=[],
+        "submission",
+        nargs="*",
         help=(
-            "Path to a bot submission. "
-            "Provide one path to reuse it for every required slot, or provide "
-            f"{NUM_PLAYERS - 1} paths with --masquerade, or {NUM_PLAYERS} paths without it."
+            "Submission specs in count:path form. "
+            f"The counts must sum to {expected} for this {NUM_PLAYERS}-player mode."
         ),
     )
     parser.add_argument(
@@ -45,11 +48,6 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=0,
         help="Submission slot to reserve for the visualiser.",
-    )
-    parser.add_argument(
-        "--masquerade",
-        action="store_true",
-        help="Allow keyboard input to control the visualiser player.",
     )
     parser.add_argument(
         "--headless",
@@ -65,30 +63,55 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--workspace",
         type=Path,
-        default=DEFAULT_WORKSPACE,
+        default=default_workspace,
         help="Directory to use for match pipes, logs, and engine outputs.",
     )
     return parser.parse_args()
 
 
-def build_submission_plan(args: argparse.Namespace) -> tuple[list[Path | None], Path | None]:
+def parse_submission_specs(specs: list[str], expected_total: int) -> list[Path]:
+    default_bot = default_submission_path()
+    if not specs:
+        return [default_bot] * expected_total
+
+    expanded: list[Path] = []
+    for spec in specs:
+        count_str, delim, path_str = spec.partition(":")
+        if delim == "" or path_str == "":
+            raise SystemExit(
+                f"Invalid submission spec '{spec}'. Expected count:path, for example 2:bots/my_bot.py."
+            )
+        try:
+            count = int(count_str)
+        except ValueError as exc:
+            raise SystemExit(
+                f"Invalid submission count in '{spec}'. Counts must be positive integers."
+            ) from exc
+        if count <= 0:
+            raise SystemExit(
+                f"Invalid submission count in '{spec}'. Counts must be positive integers."
+            )
+        expanded.extend([Path(path_str).resolve()] * count)
+
+    if len(expanded) != expected_total:
+        raise SystemExit(
+            f"Submission counts must sum to {expected_total} for this {NUM_PLAYERS}-player mode."
+        )
+    return expanded
+
+
+def build_submission_plan(
+    args: argparse.Namespace,
+    mode: str,
+) -> tuple[list[Path | None], Path | None]:
     if args.visualiser_player < 0 or args.visualiser_player >= NUM_PLAYERS:
         raise SystemExit(
             f"--visualiser-player must be between 0 and {NUM_PLAYERS - 1}."
         )
 
-    bot_paths = [Path(path).resolve() for path in args.submission]
-    default_bot = default_submission_path()
-    needed = NUM_PLAYERS - 1 if args.masquerade else NUM_PLAYERS
-    if not bot_paths:
-        bot_paths = [default_bot]
-    if len(bot_paths) == 1:
-        bot_paths = bot_paths * needed
-    if len(bot_paths) != needed:
-        required = NUM_PLAYERS - 1 if args.masquerade else NUM_PLAYERS
-        raise SystemExit(
-            f"Provide either 1 or {required} --submission values for a {NUM_PLAYERS}-player game."
-        )
+    interactive = mode == "interactive"
+    needed = NUM_PLAYERS - 1 if interactive else NUM_PLAYERS
+    bot_paths = parse_submission_specs(args.submission, needed)
 
     resolved: list[Path | None] = []
     bot_iter = iter(bot_paths)
@@ -96,7 +119,7 @@ def build_submission_plan(args: argparse.Namespace) -> tuple[list[Path | None], 
     for player in range(NUM_PLAYERS):
         if player == args.visualiser_player:
             resolved.append(None)
-            if not args.masquerade:
+            if not interactive:
                 delegated_script = next(bot_iter)
         else:
             resolved.append(next(bot_iter))
@@ -142,6 +165,7 @@ def start_submissions(
     submission_paths: list[Path | None],
     args: argparse.Namespace,
     delegated_script: Path | None,
+    interactive: bool,
 ) -> list[tuple[int, bool]]:
     env = runtime_env(workspace_root)
     processes: list[subprocess.Popen[str]] = []
@@ -155,7 +179,7 @@ def start_submissions(
             if script_path is None:
                 command = [sys.executable, "-m", "agario_visualiser.visualiser_submission"]
                 is_visualiser = True
-                if args.masquerade:
+                if interactive:
                     command.append("--masquerade")
                 elif delegated_script is not None:
                     command.extend(["--delegate-script", str(delegated_script)])
@@ -214,12 +238,19 @@ def start_engine(workspace_root: Path) -> None:
     print("[visualiser-launcher] engine terminated.")
 
 
-def main() -> None:
-    args = parse_args()
+def run_mode(mode: str) -> None:
+    args = parse_args(mode)
     workspace_root = args.workspace.resolve()
-    submission_paths, delegated_script = build_submission_plan(args)
+    interactive = mode == "interactive"
+    submission_paths, delegated_script = build_submission_plan(args, mode)
     setup_match_environment(workspace_root)
-    pids = start_submissions(workspace_root, submission_paths, args, delegated_script)
+    pids = start_submissions(
+        workspace_root,
+        submission_paths,
+        args,
+        delegated_script,
+        interactive,
+    )
 
     try:
         print(
@@ -239,6 +270,18 @@ def main() -> None:
                 print(f"[visualiser-launcher] terminated submission pid {pid}.")
             except ProcessLookupError:
                 pass
+
+
+def interactive_main() -> None:
+    run_mode("interactive")
+
+
+def simulation_main() -> None:
+    run_mode("simulation")
+
+
+def main() -> None:
+    simulation_main()
 
 
 if __name__ == "__main__":
