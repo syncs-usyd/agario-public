@@ -35,9 +35,7 @@ class GameState(GameLogic):
             i: PlayerState(i, self.catalog[i]["team_id"]) for i in range(NUM_PLAYERS)
         }
         self.map = Map()
-        self._randomise_player_spawns(
-            min_distance=max(PLAYER_SPAWN_PADDING, STARTING_RADIUS * 3)
-        )
+        self._spawn_players_in_corners()
         self._ensure_food_count()
         self._ensure_virus_count()
 
@@ -45,27 +43,21 @@ class GameState(GameLogic):
         self.private_event_history: list[EventType] = []
         self.turn_order: list[int] = []
 
-    def _randomise_player_spawns(self, min_distance: float) -> None:
-        placed: list[tuple[float, float]] = []
-        min_distance_sq = min_distance * min_distance
+    def _spawn_players_in_corners(self) -> None:
+        """Spawn players in corners: 0=top-left, 1=top-right, 2=bottom-left, 3=bottom-right."""
+        padding = max(PLAYER_SPAWN_PADDING, STARTING_RADIUS * 2)
+        corner_positions = [
+            (padding, padding),                                  # Player 0: top-left
+            (self.map.size - padding, padding),                  # Player 1: top-right
+            (padding, self.map.size - padding),                  # Player 2: bottom-left
+            (self.map.size - padding, self.map.size - padding),  # Player 3: bottom-right
+        ]
 
-        for player in self.players.values():
+        for player_id, player in self.players.items():
             spawn_blob = player.blobs[0]
-            for _ in range(10000):
-                x = random.uniform(spawn_blob.radius, self.map.size - spawn_blob.radius)
-                y = random.uniform(spawn_blob.radius, self.map.size - spawn_blob.radius)
-                if all(
-                    (x - px) * (x - px) + (y - py) * (y - py) >= min_distance_sq
-                    for px, py in placed
-                ):
-                    spawn_blob.x = x
-                    spawn_blob.y = y
-                    placed.append((x, y))
-                    break
-            else:
-                raise RuntimeError(
-                    "Could not place all players with requested minimum spacing."
-                )
+            x, y = corner_positions[player_id]
+            spawn_blob.x = x
+            spawn_blob.y = y
 
     def _connect_players(self) -> None:
         for player in self.players.values():
