@@ -10,6 +10,8 @@ from lib.interface.events.event_game_ended import (
 )
 from lib.interface.events.event_food_eaten import EventFoodEaten
 from lib.interface.events.event_food_spawned import EventFoodSpawned
+from lib.interface.events.event_virus_spawned import EventVirusSpawned
+from lib.interface.events.event_virus_consumed import EventVirusConsumed
 from lib.interface.events.event_player_bannned import EventPlayerBanned
 from lib.interface.events.event_player_eaten import EventPlayerEaten
 from lib.interface.events.event_player_won import EventPlayerWon
@@ -68,6 +70,12 @@ class EventInspector:
                     visualiser_json.append(e)
 
                 case EventFoodEaten() as e:
+                    visualiser_json.append(e)
+
+                case EventVirusSpawned() as e:
+                    visualiser_json.append(e)
+
+                case EventVirusConsumed() as e:
                     visualiser_json.append(e)
 
                 case EventPlayerWon() as e:
