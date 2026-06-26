@@ -12,6 +12,8 @@ from lib.interface.events.event_player_bannned import EventPlayerBanned
 from lib.interface.events.event_player_eaten import EventPlayerEaten
 from lib.interface.events.event_player_moved import EventPlayerMoved
 from lib.interface.events.event_player_won import EventPlayerWon
+from lib.interface.events.event_virus_spawned import EventVirusSpawned
+from lib.interface.events.event_virus_consumed import EventVirusConsumed
 from lib.interface.events.moves.move_player import MovePlayer
 from lib.interface.events.typing import EventType
 
@@ -242,6 +244,15 @@ class StateMutator:
                 blob_id=blob.blob_id,
                 total_mass=blob.mass + virus.radius,
                 piece_count=piece_count,
+            )
+            self.state.private_event_history.append(
+                EventVirusConsumed(
+                    player_id=player_id,
+                    blob_id=blob.blob_id,
+                    virus_id=virus.virus_id,
+                    virus_pos=virus.pos,
+                    pieces_created=piece_count,
+                )
             )
 
         self.state.map.viruses = remaining_viruses
@@ -512,7 +523,9 @@ class StateMutator:
         self._stabilise_same_player_blobs()
         self._emit_player_snapshots()
 
-        spawned = self.state._ensure_food_count()
-        if spawned:
-            self.commitPrivate(EventFoodSpawned(foods=spawned))
-        self.state._ensure_virus_count()
+        spawned_food = self.state._ensure_food_count()
+        if spawned_food:
+            self.commitPrivate(EventFoodSpawned(foods=spawned_food))
+        spawned_viruses = self.state._ensure_virus_count()
+        if spawned_viruses:
+            self.commitPrivate(EventVirusSpawned(viruses=spawned_viruses))
