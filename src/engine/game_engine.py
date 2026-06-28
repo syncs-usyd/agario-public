@@ -17,6 +17,7 @@ from engine.config.io_config import CORE_DIRECTORY
 from engine.state.state_mutator import StateMutator
 
 from lib.interface.events.event_food_spawned import EventFoodSpawned
+from lib.interface.events.event_virus_spawned import EventVirusSpawned
 from lib.interface.events.event_player_won import EventPlayerWon
 from lib.interface.events.event_game_started import EventGameStarted
 from lib.interface.events.moves.move_player import MovePlayer
@@ -63,6 +64,7 @@ class GameEngine:
             )
         )
         self.mutator.commitPrivate(EventFoodSpawned(foods=list(self.state.map.foods)))
+        self.mutator.commitPrivate(EventVirusSpawned(viruses=list(self.state.map.viruses)))
 
         while not self.state.is_game_over():
             print(f"New round {self.state.round + 1}", flush=True)

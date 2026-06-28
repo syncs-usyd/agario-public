@@ -3,6 +3,7 @@
 ## Arena
 
 - The game takes place in a square arena.
+- Players are spawned in each corner of the arena.
 - The arena size and player count are controlled by config values.
 - Food is spawned randomly and maintained at a fixed count.
 
@@ -24,6 +25,7 @@ Players can observe:
 
 - Their own authoritative blob list with absolute coordinates, sizes, and cooldowns
 - Food within their current vision square
+- Viruses within their current vision square
 - Other visible blobs with absolute coordinates and size
 
 The vision size is recalculated by the engine each turn as a function of the
@@ -57,10 +59,23 @@ The engine normalizes the direction and applies movement using the configured ba
 
 ## Eating Players
 
-- A blob may eat an enemy blob only if it is at least 10% larger.
+- A blob may eat an enemy blob only if it is at least 20% larger.
 - The smaller blob's center must lie inside the larger blob's radius.
 - When a blob is eaten, the larger blob absorbs its size contribution.
 - A player is eliminated only when all of their blobs have been eaten.
+
+## Viruses
+
+- Viruses are stationary green spiky objects scattered around the arena.
+- The arena maintains a fixed virus count (default 3).
+- Viruses have a fixed radius (default 1.5).
+- A blob can only consume a virus if its mass is at least 20% larger than the virus's mass.
+- When a blob consumes a virus:
+  - The virus's mass is added to the blob.
+  - The blob is forcibly split into multiple pieces (up to the maximum blob count of 16).
+  - Each resulting piece has a merge cooldown.
+- Consumed viruses respawn at random positions to maintain the virus count.
+- Viruses are visible to players within their vision square.
 
 ## End Condition
 

@@ -29,3 +29,16 @@ jobs:
         run: uv run interactive --help
       - name: Check simulation CLI
         run: uv run simulation --help
+
+  trigger-runner:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch agario-runner rebuild
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.RUNNER_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/syncs-usyd/agario-runner/dispatches \
+            -d '{"event_type":"agario-public-updated","client_payload":{"sha":"${{ github.sha }}"}}'

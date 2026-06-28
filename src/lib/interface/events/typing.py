@@ -12,6 +12,8 @@ from lib.interface.events.event_player_eaten import EventPlayerEaten
 from lib.interface.events.event_player_bannned import EventPlayerBanned
 from lib.interface.events.event_player_moved import EventPlayerMoved
 from lib.interface.events.event_player_won import EventPlayerWon
+from lib.interface.events.event_virus_spawned import EventVirusSpawned
+from lib.interface.events.event_virus_consumed import EventVirusConsumed
 from lib.interface.events.moves.typing import MoveType
 
 from typing import Annotated, TypeAlias, Union
@@ -23,6 +25,8 @@ EventType: TypeAlias = Annotated[
         EventPlayerEaten,
         EventFoodSpawned,
         EventFoodEaten,
+        EventVirusSpawned,
+        EventVirusConsumed,
         EventGameStarted,
         EventPlayerBanned,
         EventPlayerWon,
