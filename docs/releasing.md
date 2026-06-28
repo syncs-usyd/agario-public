@@ -42,10 +42,7 @@ Use these values when configuring each publisher:
 
 1. Update the version in the root `pyproject.toml`.
 2. Commit and push to `main`.
-3. Run the `Publish Package` workflow manually with `repository=testpypi`.
-4. Verify installs from TestPyPI.
-5. Create and push a tag such as `v2026.1.1`.
-6. Approve the `pypi` environment deployment in GitHub if required.
+5. Create and push a tag such as `v2026.1.1` <- same tag as what you updated it to.
 7. Announce the release to competitors:
 
 ```bash
