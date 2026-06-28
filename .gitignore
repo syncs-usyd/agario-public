@@ -5,8 +5,8 @@ __pycache__/
 
 # Environments
 .env
-.venv
-venv
+.venv/
+venv/
 
 # Distribution / packaging
 .Python
