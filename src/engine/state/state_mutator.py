@@ -1,9 +1,10 @@
 import math
+import random
 
 from engine.state.blob_state import BlobState
 from engine.state.game_state import GameState
 
-from lib.config.arena import MAX_BLOB_COUNT
+from lib.config.arena import MAX_BLOB_COUNT, PLAYER_SPAWN_PADDING, RESPAWN_DELAY_ROUNDS
 from lib.interface.events.event_game_ended import EventGameEndedCancelled
 from lib.interface.events.event_food_eaten import EventFoodEaten
 from lib.interface.events.event_food_spawned import EventFoodSpawned
@@ -29,6 +30,7 @@ from lib.config.player import (
     SPLIT_EJECT_DRAG,
     SPLIT_EJECT_SPEED,
     SPLIT_MIN_MASS,
+    STARTING_RADIUS,
 )
 
 
@@ -467,6 +469,7 @@ class StateMutator:
                     del target_player.blobs[target_blob_id]
                     if not target_player.alive:
                         target_player.round_died = self.state.round
+                        target_player.respawn_at_round = self.state.round + RESPAWN_DELAY_ROUNDS
 
                     self.commit(
                         EventPlayerEaten(
@@ -497,6 +500,30 @@ class StateMutator:
                 )
             )
 
+    def _respawn_dead_players(self) -> None:
+        padding = max(PLAYER_SPAWN_PADDING, STARTING_RADIUS * 2)
+        lo = padding
+        hi = self.state.map.size - padding
+        for player in self.state.players.values():
+            if player.alive or player.respawn_at_round is None:
+                continue
+            if self.state.round < player.respawn_at_round:
+                continue
+            for _ in range(10000):
+                x = random.uniform(lo, hi)
+                y = random.uniform(lo, hi)
+                clear = all(
+                    math.hypot(x - blob.x, y - blob.y) >= STARTING_RADIUS * 4
+                    for other in self.state.players.values()
+                    if other.alive
+                    for blob in other.blobs.values()
+                )
+                if clear:
+                    break
+            blob_id = player.next_blob_id()
+            player.blobs[blob_id] = BlobState(blob_id=blob_id, x=x, y=y, radius=STARTING_RADIUS)
+            player.respawn_at_round = None
+
     def commit_round(self, events: list[MovePlayer]) -> None:
         for event in events:
             self.commit(event)
@@ -521,6 +548,7 @@ class StateMutator:
         self._resolve_food()
         self._resolve_player_eating()
         self._stabilise_same_player_blobs()
+        self._respawn_dead_players()
         self._emit_player_snapshots()
 
         spawned_food = self.state._ensure_food_count()

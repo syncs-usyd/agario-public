@@ -35,7 +35,7 @@ class GameState(GameLogic):
             i: PlayerState(i, self.catalog[i]["team_id"]) for i in range(NUM_PLAYERS)
         }
         self.map = Map()
-        self._spawn_players_in_corners()
+        self._spawn_players_randomly()
         self._ensure_food_count()
         self._ensure_virus_count()
 
@@ -43,21 +43,34 @@ class GameState(GameLogic):
         self.private_event_history: list[EventType] = []
         self.turn_order: list[int] = []
 
-    def _spawn_players_in_corners(self) -> None:
-        """Spawn players in corners: 0=top-left, 1=top-right, 2=bottom-left, 3=bottom-right."""
+    def _spawn_players_randomly(self) -> None:
         padding = max(PLAYER_SPAWN_PADDING, STARTING_RADIUS * 2)
-        corner_positions = [
-            (padding, padding),                                  # Player 0: top-left
-            (self.map.size - padding, padding),                  # Player 1: top-right
-            (padding, self.map.size - padding),                  # Player 2: bottom-left
-            (self.map.size - padding, self.map.size - padding),  # Player 3: bottom-right
-        ]
+        lo = padding
+        hi = self.map.size - padding
+        min_separation = (hi - lo) / math.sqrt(NUM_PLAYERS) * 0.6
+        placed: list[tuple[float, float]] = []
 
-        for player_id, player in self.players.items():
-            spawn_blob = player.blobs[0]
-            x, y = corner_positions[player_id]
-            spawn_blob.x = x
-            spawn_blob.y = y
+        for player in self.players.values():
+            for _ in range(10000):
+                x = random.uniform(lo, hi)
+                y = random.uniform(lo, hi)
+                if all(
+                    math.hypot(x - px, y - py) >= min_separation
+                    for px, py in placed
+                ):
+                    placed.append((x, y))
+                    blob = player.blobs[0]
+                    blob.x = x
+                    blob.y = y
+                    break
+            else:
+                # Fallback: place anywhere with just wall padding
+                x = random.uniform(lo, hi)
+                y = random.uniform(lo, hi)
+                placed.append((x, y))
+                blob = player.blobs[0]
+                blob.x = x
+                blob.y = y
 
     def _connect_players(self) -> None:
         for player in self.players.values():
@@ -219,4 +232,4 @@ class GameState(GameLogic):
         ]
 
     def is_game_over(self) -> bool:
-        return self.round + 1 >= self.max_rounds or len(self.living_players()) <= 1
+        return self.round + 1 >= self.max_rounds
