@@ -19,6 +19,7 @@ class PlayerState:
         }
         self._next_blob_id = 1
         self.round_died: int = -1
+        self.respawn_at_round: int | None = None
         self.connection: PlayerConnection
 
     @property
