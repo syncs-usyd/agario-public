@@ -6,8 +6,10 @@ from engine.state.game_state import GameState
 from engine.state.state_mutator import StateMutator
 from lib.config.arena import (
     MAX_BLOB_COUNT,
+    NUM_PLAYERS,
     VISION_REFERENCE_SUM_OF_RADII,
     VISION_SIZE,
+    VIRUS_COUNT,
 )
 from lib.config.player import SAME_PLAYER_OVERLAP_EPSILON, SPLIT_MIN_MASS
 from lib.interface.events.moves.move_player import MovePlayer
@@ -19,7 +21,7 @@ def _make_state(tmp_path, monkeypatch) -> GameState:
     (tmp_path / "input").mkdir()
     (tmp_path / "output").mkdir()
     with open(tmp_path / "input" / "catalog.json", "w") as file:
-        json.dump([{"team_id": index} for index in range(4)], file)
+        json.dump([{"team_id": index} for index in range(NUM_PLAYERS)], file)
     return GameState()
 
 
@@ -233,7 +235,7 @@ def test_virus_pop_adds_mass_and_splits_up_to_cap(tmp_path, monkeypatch) -> None
     )
 
     assert len(player.blobs) == MAX_BLOB_COUNT
-    assert len(state.map.viruses) == 3
+    assert len(state.map.viruses) == VIRUS_COUNT
     expected_total_mass = 4.0 + 2.0
     total_mass_after = sum(blob.mass for blob in player.blobs.values())
     assert math.isclose(total_mass_after, expected_total_mass, rel_tol=1e-9)
@@ -271,6 +273,6 @@ def test_virus_does_not_pop_when_blob_is_not_large_enough(tmp_path, monkeypatch)
     )
 
     assert len(player.blobs) == 1
-    assert len(state.map.viruses) == 3
+    assert len(state.map.viruses) == VIRUS_COUNT
     total_mass_after = sum(blob.mass for blob in player.blobs.values())
     assert math.isclose(total_mass_after, total_mass_before, rel_tol=1e-9)

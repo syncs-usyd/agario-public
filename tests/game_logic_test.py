@@ -7,6 +7,7 @@ import unittest
 from engine.state.game_state import GameState
 # from engine.game.tile_subscriber import MonastaryNeighbourSubsciber, TilePublisherBus
 
+from lib.config.arena import NUM_PLAYERS
 from lib.interact.map import Map
 
 
@@ -19,7 +20,7 @@ class TestMoveDown(unittest.TestCase):
         (tmp_path / "input").mkdir()
         (tmp_path / "output").mkdir()
         with open(tmp_path / "input" / "catalog.json", "w") as file:
-            json.dump([{"team_id": index} for index in range(4)], file)
+            json.dump([{"team_id": index} for index in range(NUM_PLAYERS)], file)
         self.state = GameState()
         self.state.map = Map()
 
