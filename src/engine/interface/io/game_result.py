@@ -14,6 +14,7 @@ class GameBanResult(BaseModel):
 class GameSuccessResult(BaseModel):
     result_type: Literal["SUCCESS"] = "SUCCESS"
     ranking: Sequence[int]
+    final_masses: Mapping[int, float]
 
 
 class GameCancelledResult(BaseModel):

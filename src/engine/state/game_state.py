@@ -226,10 +226,16 @@ class GameState(GameLogic):
             player.id
             for player in sorted(
                 self.players.values(),
-                key=lambda p: (1 if p.alive else 0, p.radius, p.round_died),
+                key=lambda p: p.radius,
                 reverse=True,
             )
         ]
+
+    def get_final_masses(self) -> dict[int, float]:
+        return {
+            player.id: player.radius * player.radius
+            for player in self.players.values()
+        }
 
     def is_game_over(self) -> bool:
         return self.round + 1 >= self.max_rounds

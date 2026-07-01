@@ -25,10 +25,14 @@ from pydantic import RootModel
 
 class EventInspector:
     def __init__(
-        self, history: list[EventType], ranking: list[int]
+        self,
+        history: list[EventType],
+        ranking: list[int],
+        final_masses: dict[int, float],
     ) -> None:
         self.history = history
         self.ranking = ranking
+        self.final_masses = final_masses
 
     def get_result(
         self,
@@ -43,7 +47,10 @@ class EventInspector:
                     ban_type=e.ban_type, player=e.player_id, reason=e.reason
                 )
             case EventPlayerWon():
-                return GameSuccessResult(ranking=self.ranking)
+                return GameSuccessResult(
+                    ranking=self.ranking,
+                    final_masses=self.final_masses,
+                )
             case _:
                 return GameCrashedResult(reason="Game engine crashed.")
 

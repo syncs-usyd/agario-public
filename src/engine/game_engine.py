@@ -95,6 +95,7 @@ class GameEngine:
         inspector = EventInspector(
             self.state.private_event_history,
             self.state.get_rankings(),
+            self.state.get_final_masses(),
         )
         result = inspector.get_result()
 

@@ -14,10 +14,13 @@ from lib.config.arena import (
 from lib.config.player import SAME_PLAYER_OVERLAP_EPSILON, SPLIT_MIN_MASS
 from lib.interface.events.moves.move_player import MovePlayer
 from lib.models.penguin_model import DirectionModel
+import engine.state.state_mutator as state_mutator_module
 
 
 def _make_state(tmp_path, monkeypatch) -> GameState:
     monkeypatch.chdir(tmp_path)
+    # Disable mass decay for tests that check mass conservation
+    monkeypatch.setattr(state_mutator_module, "MASS_DECAY_RATE", 0.0)
     (tmp_path / "input").mkdir()
     (tmp_path / "output").mkdir()
     with open(tmp_path / "input" / "catalog.json", "w") as file:

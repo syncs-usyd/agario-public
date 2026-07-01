@@ -22,6 +22,7 @@ from lib.config.player import (
     BASE_PLAYER_SPEED,
     EAT_SIZE_RATIO,
     FOOD_RADIUS,
+    MASS_DECAY_RATE,
     MERGE_ATTRACTION_SPEED,
     MIN_PLAYER_SPEED,
     PLAYER_SPEED_RADIUS_FACTOR,
@@ -524,6 +525,17 @@ class StateMutator:
             player.blobs[blob_id] = BlobState(blob_id=blob_id, x=x, y=y, radius=STARTING_RADIUS)
             player.respawn_at_round = None
 
+    def _apply_mass_decay(self) -> None:
+        min_mass = STARTING_RADIUS * STARTING_RADIUS
+        for player in self.state.players.values():
+            if not player.alive:
+                continue
+            for blob in player.blobs.values():
+                new_mass = blob.mass * (1.0 - MASS_DECAY_RATE)
+                if new_mass < min_mass:
+                    new_mass = min_mass
+                blob.radius = math.sqrt(new_mass)
+
     def commit_round(self, events: list[MovePlayer]) -> None:
         for event in events:
             self.commit(event)
@@ -542,6 +554,7 @@ class StateMutator:
             for blob in player.blobs.values():
                 self._move_blob(blob, direction_x, direction_y)
 
+        self._apply_mass_decay()
         self._stabilise_same_player_blobs()
         self._resolve_viruses()
         self._stabilise_same_player_blobs()
