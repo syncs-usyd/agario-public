@@ -25,8 +25,8 @@ Players can observe:
 
 - Their own authoritative blob list with absolute coordinates, sizes, and cooldowns
 - Food within their current vision square
-- Viruses within their current vision square
-- Other visible blobs with absolute coordinates and size
+- Viruses whose circles intersect their current vision square
+- Other blobs whose circles intersect their current vision square, with absolute coordinates and size
 
 The vision size is recalculated by the engine each turn as a function of the
 sum of the player's blob radii.
@@ -75,7 +75,7 @@ The engine normalizes the direction and applies movement using the configured ba
   - The blob is forcibly split into multiple pieces (up to the maximum blob count of 16).
   - Each resulting piece has a merge cooldown.
 - Consumed viruses respawn at random positions to maintain the virus count.
-- Viruses are visible to players within their vision square.
+- Viruses are visible to players when any part of the virus enters their vision square.
 
 ## End Condition
 

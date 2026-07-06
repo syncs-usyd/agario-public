@@ -157,6 +157,47 @@ def test_view_center_and_visibility_use_player_centroid(tmp_path, monkeypatch) -
     assert not state.player_can_see_point(player.id, 9.9, 10.0)
 
 
+def test_blob_and_virus_become_visible_when_edges_enter_vision(
+    tmp_path, monkeypatch
+) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    viewer = state.players[0]
+    other = state.players[1]
+    state.map.foods = []
+    state.map.viruses = []
+
+    viewer.blobs = {
+        0: BlobState(blob_id=0, x=20.0, y=20.0, radius=1.0),
+    }
+    other.blobs = {
+        0: BlobState(blob_id=0, x=30.5, y=20.0, radius=1.0),
+    }
+    virus = state.map.spawn_virus(pos=(30.75, 20.0), radius=1.0)
+
+    visible_blob_ids = {
+        (blob.player_id, blob.blob_id) for blob in state.get_visible_blobs(viewer.id)
+    }
+    visible_virus_ids = {virus.virus_id for virus in state.get_visible_viruses(viewer.id)}
+
+    assert (other.id, 0) in visible_blob_ids
+    assert visible_virus_ids == {virus.virus_id}
+
+
+def test_circle_visibility_respects_diagonal_corner_intersection(
+    tmp_path, monkeypatch
+) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    viewer = state.players[0]
+    state.map.viruses = []
+
+    viewer.blobs = {
+        0: BlobState(blob_id=0, x=20.0, y=20.0, radius=1.0),
+    }
+
+    assert not state.player_can_see_circle(viewer.id, 30.9, 30.9, 1.0)
+    assert state.player_can_see_circle(viewer.id, 30.6, 30.6, 1.0)
+
+
 def test_vision_size_scales_from_sum_of_blob_radii(tmp_path, monkeypatch) -> None:
     state = _make_state(tmp_path, monkeypatch)
     player = state.players[0]

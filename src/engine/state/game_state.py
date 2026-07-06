@@ -129,6 +129,22 @@ class GameState(GameLogic):
             and abs(target_y - observer_y) <= half_vision
         )
 
+    def is_circle_in_vision(
+        self,
+        observer_x: float,
+        observer_y: float,
+        vision_size: float,
+        target_x: float,
+        target_y: float,
+        target_radius: float,
+    ) -> bool:
+        half_vision = vision_size / 2
+        dx_outside = max(abs(target_x - observer_x) - half_vision, 0.0)
+        dy_outside = max(abs(target_y - observer_y) - half_vision, 0.0)
+        return dx_outside * dx_outside + dy_outside * dy_outside <= (
+            target_radius * target_radius
+        )
+
     def get_player_view_center(self, player_id: int) -> tuple[float, float]:
         player = self.players[player_id]
         return (player.x, player.y)
@@ -164,6 +180,27 @@ class GameState(GameLogic):
             target_y,
         )
 
+    def player_can_see_circle(
+        self,
+        player_id: int,
+        target_x: float,
+        target_y: float,
+        target_radius: float,
+    ) -> bool:
+        player = self.players[player_id]
+        if not player.alive:
+            return False
+        center_x, center_y = self.get_player_view_center(player_id)
+        vision_size = self.get_player_vision_size(player_id)
+        return self.is_circle_in_vision(
+            center_x,
+            center_y,
+            vision_size,
+            target_x,
+            target_y,
+            target_radius,
+        )
+
     def get_visible_food(self, player_id: int) -> list[FoodModel]:
         if not self.players[player_id].alive:
             return []
@@ -178,7 +215,12 @@ class GameState(GameLogic):
             return []
         visible_viruses: list[VirusModel] = []
         for virus in self.map.viruses:
-            if self.player_can_see_point(player_id, virus.pos[0], virus.pos[1]):
+            if self.player_can_see_circle(
+                player_id,
+                virus.pos[0],
+                virus.pos[1],
+                virus.radius,
+            ):
                 visible_viruses.append(virus)
         return visible_viruses
 
@@ -190,7 +232,7 @@ class GameState(GameLogic):
             return []
         visible_blobs: list[BlobModel] = []
         for blob in target.sorted_blobs():
-            if self.player_can_see_point(viewer_id, blob.x, blob.y):
+            if self.player_can_see_circle(viewer_id, blob.x, blob.y, blob.radius):
                 visible_blobs.append(blob._to_model())
         return visible_blobs
 
@@ -202,7 +244,12 @@ class GameState(GameLogic):
             if other.id == player_id or not other.alive:
                 continue
             for blob in other.sorted_blobs():
-                if self.player_can_see_point(player_id, blob.x, blob.y):
+                if self.player_can_see_circle(
+                    player_id,
+                    blob.x,
+                    blob.y,
+                    blob.radius,
+                ):
                     visible_players.append(
                         blob._to_visible_model(
                             player_id=other.id,
@@ -214,7 +261,7 @@ class GameState(GameLogic):
     def player_is_visible_to(self, target_id: int, viewer_id: int) -> bool:
         target = self.players[target_id]
         return any(
-            self.player_can_see_point(viewer_id, blob.x, blob.y)
+            self.player_can_see_circle(viewer_id, blob.x, blob.y, blob.radius)
             for blob in target.blobs.values()
         )
 
