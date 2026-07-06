@@ -209,14 +209,17 @@ def start_submissions(
     ]
 
 
-def start_engine(workspace_root: Path) -> None:
+def start_engine(workspace_root: Path, realtime: bool) -> None:
     env = runtime_env(workspace_root)
     print("[visualiser-launcher] started engine.")
     with open(workspace_root / "output" / "engine.log", "w") as stdout_file, open(
         workspace_root / "output" / "engine.err", "w"
     ) as stderr_file:
+        command = [sys.executable, "-m", "engine"]
+        if realtime:
+            command.append("--realtime")
         process = subprocess.Popen(
-            [sys.executable, "-m", "engine", "--print-recording-interactive"],
+            command,
             cwd=workspace_root,
             env=env,
             stdout=subprocess.PIPE,
@@ -257,7 +260,7 @@ def run_mode(mode: str) -> None:
             f"[visualiser-launcher] delaying engine start for {START_DELAY_SECONDS:.0f}s countdown."
         )
         time.sleep(START_DELAY_SECONDS)
-        start_engine(workspace_root)
+        start_engine(workspace_root, realtime=not args.headless)
     finally:
         for pid, is_visualiser in pids:
             if is_visualiser:

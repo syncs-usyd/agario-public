@@ -41,28 +41,10 @@ class StateMutator:
                 self.state.view_center = e.you.pos
                 self.state.turn_duration_seconds = e.turn_duration_seconds
                 self.state.max_rounds = e.max_rounds
-                self.state.players = {p.player_id: ClientPlayer(p) for p in e.players}
-                self.state.me = self.state.players[e.you.player_id]
-                self.state.me.sync_from_model(e.you)
-
-            case EventPlayerMoved() as e:
-                player = self.state.players[e.player_id]
-                player.sync_snapshot(
-                    pos=e.pos,
-                    radius=e.radius,
-                    alive=e.alive,
-                    blobs=e.blobs,
-                )
-
-            case EventPlayerEaten() as e:
-                eater = self.state.players[e.eater_player_id]
-                eater_blob = eater.blobs.get(e.eater_blob_id)
-                if eater_blob is not None:
-                    eater_blob.radius = e.eater_radius
-
-                eaten = self.state.players[e.eaten_player_id]
-                eaten.blobs.pop(e.eaten_blob_id, None)
-                eaten.alive = e.eaten_player_alive
+                self.state.total_players = len(e.players)
+                self.state.game_over = False
+                self.state.winner_player_id = None
+                self.state.me = ClientPlayer(e.you)
 
             case EventGameEndedCancelled() as e:
                 self.state.game_over = True
@@ -72,6 +54,10 @@ class StateMutator:
 
             case EventPlayerWon() as e:
                 self.state.game_over = True
+                self.state.winner_player_id = e.player_id
+
+            case EventPlayerMoved() | EventPlayerEaten():
+                pass
 
             case MovePlayer() as e:
                 pass

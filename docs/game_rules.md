@@ -19,7 +19,7 @@ Each player controls one or more circular blobs with:
 ## Vision
 
 Each player has a single square view centered on the mass-weighted centroid of
-their blobs.
+their blobs, clamped so the vision square remains inside the arena bounds.
 
 Players can observe:
 

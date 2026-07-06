@@ -20,6 +20,7 @@ from typing import Optional
 import helper.game as helper_game
 from helper.game import Game
 from lib.interface.events.moves.move_player import MovePlayer
+from lib.interface.events.moves.typing import MoveType
 from lib.models.penguin_model import DirectionModel
 
 
@@ -429,7 +430,7 @@ class VisualiserApp:
         for blob in blobs.values():
             if not blob.alive:
                 continue
-            if not self._is_in_camera(camera, blob.x, blob.y):
+            if not self._is_circle_in_camera(camera, blob.x, blob.y, blob.radius):
                 continue
             x = pad + (blob.x - camera.left) * camera.scale_x
             y = pad + (blob.y - camera.top) * camera.scale_y
@@ -465,7 +466,7 @@ class VisualiserApp:
                 )
 
         for _virus_id, x_world, y_world, virus_radius in snapshot.visible_viruses:
-            if not self._is_in_camera(camera, x_world, y_world):
+            if not self._is_circle_in_camera(camera, x_world, y_world, virus_radius):
                 continue
             x = pad + (x_world - camera.left) * camera.scale_x
             y = pad + (y_world - camera.top) * camera.scale_y
@@ -642,6 +643,17 @@ class VisualiserApp:
     def _is_in_camera(self, camera: CameraFrame, x: float, y: float) -> bool:
         return camera.left <= x <= camera.right and camera.top <= y <= camera.bottom
 
+    def _is_circle_in_camera(
+        self,
+        camera: CameraFrame,
+        x: float,
+        y: float,
+        radius: float,
+    ) -> bool:
+        dx_outside = max(camera.left - x, 0.0, x - camera.right)
+        dy_outside = max(camera.top - y, 0.0, y - camera.bottom)
+        return dx_outside * dx_outside + dy_outside * dy_outside <= radius * radius
+
     def _draw_grid(
         self,
         canvas: object,
@@ -736,15 +748,11 @@ class VisualiserApp:
 
 def estimate_placement(game: Game) -> tuple[Optional[int], int]:
     state = game.state
-    players = sorted(
-        state.players.values(),
-        key=lambda player: (1 if player.alive else 0, player.radius),
-        reverse=True,
-    )
-    for index, player in enumerate(players, start=1):
-        if player.player_id == state.me.player_id:
-            return (index, len(players))
-    return (None, len(players))
+    if state.total_players <= 0:
+        return (None, 0)
+    if state.winner_player_id == state.me.player_id:
+        return (1, state.total_players)
+    return (None, state.total_players)
 
 
 def load_match_result(player_id: int) -> tuple[Optional[int], int]:
@@ -820,7 +828,7 @@ def build_snapshot(
         status=status,
         game_over=state.game_over if game_over is None else game_over,
         placement=placement,
-        total_players=len(state.players) if total_players is None else total_players,
+        total_players=state.total_players if total_players is None else total_players,
     )
 
 

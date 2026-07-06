@@ -16,8 +16,6 @@ DIRECTORY_PERMISSIONS = 0o775
 
 
 def main():
-    # uv run python scripts/match_simulator.py --submissions 3:examples/submissions/example.py 1:examples/submissions/aggressive.py --engine
-
     commands = parse_cmd_args(sys.argv[1:])
 
     try:
@@ -76,18 +74,15 @@ def parse_cmd_args(args: list[str]):
 
 def print_usage():
     print(
-        "Usage: python3 match_simulator.py [options]\n"
+        "Usage: python3 scripts/match_simulator.py --submissions <count>:<path> [<count>:<path> ...] [--engine]\n"
         "   options:\n"
-        "       --submissions {<count> | d}:<path> ...      Sets the source files for the submissions to run in this match. If <count> is specified, <count> copies\n"
-        "                                                       of the submission will play in the match, else if 'd' is specified a single copy will play and it\n"
-        "                                                       will not be automatically started.\n"
-        "       --engine                                    If present, the simulator will start the engine. To run the match without this flag you need to manually\n"
-        "                                                       start the engine (for example, while debugging it).\n"
+        f"       --submissions <count>:<path> ...           Run <count> copies of the submission at <path>. The counts across all entries must add up to {NUM_PLAYERS}.\n"
+        "       --engine                                    If present, the simulator will start the engine. Without this flag you must start the engine manually.\n"
         "\n"
         "   examples:\n"
-        "       uv run python scripts/match_simulator.py --submissions 4:examples/submissions/example.py --engine\n"
-        "       uv run python scripts/match_simulator.py --submissions 1:examples/submissions/example.py 3:my_submission.py --engine\n"
-        "       uv run python scripts/match_simulator.py --submissions 3:examples/submissions/example.py d:my_submission.py --engine\n"
+        "       uv run python scripts/match_simulator.py --submissions 4:examples/submissions/cautious.py --engine\n"
+        "       uv run python scripts/match_simulator.py --submissions 1:examples/submissions/cautious.py 3:examples/submissions/dont_move.py --engine\n"
+        "       uv run python scripts/match_simulator.py --submissions 2:examples/submissions/cautious.py 2:examples/submissions/dont_move.py\n"
     )
     sys.exit(0)
 
@@ -142,7 +137,7 @@ def start_engine():
         open("output/engine.err", "w") as f_err,
     ):
         process = subprocess.Popen(
-            ["python3", "-m", "engine", "--print-recording-interactive"],
+            ["python3", "-m", "engine", "--realtime"],
             stdout=subprocess.PIPE,
             stderr=f_err,
             text=True,

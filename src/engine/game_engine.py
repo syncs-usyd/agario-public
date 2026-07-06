@@ -1,5 +1,6 @@
 from time import perf_counter, sleep
 
+from agario_kit import get_engine_version
 from lib.config.arena import NUM_PLAYERS, MAX_ROUNDS, TURN_DURATION_SECONDS, VISION_SIZE
 from engine.interface.io.censor_event import CensorEvent
 from engine.interface.io.exceptions import PlayerException
@@ -27,13 +28,15 @@ import shutil
 
 
 class GameEngine:
-    def __init__(self, print_recording_interactive: bool = False) -> None:
+    def __init__(self, realtime: bool = False) -> None:
         print("Intialising game engine!")
 
+        self.engine_version = get_engine_version()
         self.state = GameState()
         self.validator = MoveValidator(self.state)
         self.mutator = StateMutator(self.state)
         self.censor = CensorEvent(self.state)
+        self.realtime = realtime
 
     def start(self) -> None:
         try:
@@ -61,6 +64,7 @@ class GameEngine:
                     player._to_model()
                     for player in self.state.players.values()
                 ],
+                engine_version=self.engine_version,
             )
         )
         self.mutator.commitPrivate(EventFoodSpawned(foods=list(self.state.map.foods)))
@@ -83,9 +87,10 @@ class GameEngine:
                     moves.append(response)
             self.mutator.commit_round(moves)
 
-            remaining = TURN_DURATION_SECONDS - (perf_counter() - round_started_at)
-            if remaining > 0:
-                sleep(remaining)
+            if self.realtime:
+                remaining = TURN_DURATION_SECONDS - (perf_counter() - round_started_at)
+                if remaining > 0.0:
+                    sleep(remaining)
 
         rankings = self.state.get_rankings()
         self.mutator.commit(EventPlayerWon(player_id=rankings[0]))

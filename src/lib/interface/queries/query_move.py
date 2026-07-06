@@ -8,6 +8,8 @@ from lib.models.virus_model import VirusModel
 
 
 class QueryMovePlayer(BaseQuery):
+    """Authoritative per-turn payload sent to a bot player."""
+
     query_type: Literal["move_player"] = "move_player"
     round: int
     you: PlayerModel

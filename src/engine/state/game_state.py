@@ -147,7 +147,12 @@ class GameState(GameLogic):
 
     def get_player_view_center(self, player_id: int) -> tuple[float, float]:
         player = self.players[player_id]
-        return (player.x, player.y)
+        vision_size = min(self.get_player_vision_size(player_id), self.map.size)
+        half_vision = vision_size / 2
+        return (
+            min(max(player.x, half_vision), self.map.size - half_vision),
+            min(max(player.y, half_vision), self.map.size - half_vision),
+        )
 
     def get_player_vision_size(self, player_id: int) -> float:
         player = self.players[player_id]

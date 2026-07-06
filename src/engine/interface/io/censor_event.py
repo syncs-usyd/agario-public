@@ -17,6 +17,8 @@ class CensorEvent:
         self.state = state
 
     def censor(self, event: EventType, player_id: int) -> Optional[EventType]:
+        """Return the bot-visible form of an engine event, or None if it stays hidden."""
+
         match event:
             case EventGameStarted() as e:
                 return PublicEventGameStarted(
@@ -29,6 +31,7 @@ class CensorEvent:
                     you=filter(
                         lambda x: x.player_id == player_id, e.players
                     ).__next__(),
+                    engine_version=e.engine_version,
                 )
             case EventPlayerMoved() as e:
                 if e.player_id == player_id:

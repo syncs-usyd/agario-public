@@ -157,6 +157,24 @@ def test_view_center_and_visibility_use_player_centroid(tmp_path, monkeypatch) -
     assert not state.player_can_see_point(player.id, 9.9, 10.0)
 
 
+def test_view_center_is_clipped_to_keep_vision_inside_arena(
+    tmp_path, monkeypatch
+) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    player = state.players[0]
+    state.map.viruses = []
+
+    player.blobs = {
+        0: BlobState(blob_id=0, x=1.0, y=1.0, radius=1.0),
+    }
+    assert state.get_player_view_center(player.id) == (10.0, 10.0)
+
+    player.blobs = {
+        0: BlobState(blob_id=0, x=59.0, y=59.0, radius=1.0),
+    }
+    assert state.get_player_view_center(player.id) == (50.0, 50.0)
+
+
 def test_blob_and_virus_become_visible_when_edges_enter_vision(
     tmp_path, monkeypatch
 ) -> None:

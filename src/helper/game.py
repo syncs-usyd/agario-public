@@ -29,7 +29,6 @@ class Game:
                 self.state.visible_blobs = list(q.visible_blobs)
                 self.state.visible_viruses = list(q.visible_viruses)
                 self.state.me.sync_from_model(q.you)
-                self.state.players[q.you.player_id].sync_from_model(q.you)
 
         return query
 
