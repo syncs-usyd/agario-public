@@ -271,7 +271,7 @@ def test_split_respects_max_blob_count(tmp_path, monkeypatch) -> None:
     assert math.isclose(total_mass_before, total_mass_after, rel_tol=1e-9)
 
 
-def test_virus_pop_adds_mass_and_splits_up_to_cap(tmp_path, monkeypatch) -> None:
+def test_virus_pop_splits_blob_up_to_cap(tmp_path, monkeypatch) -> None:
     state = _make_state(tmp_path, monkeypatch)
     mutator = StateMutator(state)
     player = state.players[0]
@@ -282,8 +282,10 @@ def test_virus_pop_adds_mass_and_splits_up_to_cap(tmp_path, monkeypatch) -> None
         if other_id != player.id:
             other.blobs.clear()
 
+    # Blob must be large enough to consume virus: mass > virus_mass * EAT_SIZE_RATIO
+    # With virus_radius=2.0, virus_mass=4.0, need blob.mass > 4.8, so radius > 2.19
     player.blobs = {
-        0: BlobState(blob_id=0, x=20.0, y=20.0, radius=2.0),
+        0: BlobState(blob_id=0, x=20.0, y=20.0, radius=2.5),
     }
     state.map.spawn_virus(pos=(20.0, 20.0), radius=2.0)
 
@@ -298,7 +300,8 @@ def test_virus_pop_adds_mass_and_splits_up_to_cap(tmp_path, monkeypatch) -> None
 
     assert len(player.blobs) == MAX_BLOB_COUNT
     assert len(state.map.viruses) == VIRUS_COUNT
-    expected_total_mass = 4.0 + 2.0
+    # Virus does NOT add mass - blob splits and conserves its original mass
+    expected_total_mass = 2.5 * 2.5  # 6.25
     total_mass_after = sum(blob.mass for blob in player.blobs.values())
     assert math.isclose(total_mass_after, expected_total_mass, rel_tol=1e-9)
 
