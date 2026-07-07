@@ -211,8 +211,8 @@ class StateMutator:
             <= combined_radius * combined_radius
         )
 
-    def _can_consume_virus(self, blob: BlobState, virus_mass: float) -> bool:
-        return blob.mass > virus_mass * EAT_SIZE_RATIO
+    def _can_consume_virus(self, blob: BlobState, virus_radius: float) -> bool:
+        return blob.mass > (virus_radius ** 2) * EAT_SIZE_RATIO
 
     def _resolve_viruses(self) -> None:
         remaining_viruses = []
@@ -245,7 +245,7 @@ class StateMutator:
             self._split_blob_evenly(
                 player_id=player_id,
                 blob_id=blob.blob_id,
-                total_mass=blob.mass + virus.radius,
+                total_mass=blob.mass,
                 piece_count=piece_count,
             )
             self.state.private_event_history.append(
@@ -531,7 +531,10 @@ class StateMutator:
             if not player.alive:
                 continue
             for blob in player.blobs.values():
-                new_mass = blob.mass * (1.0 - MASS_DECAY_RATE)
+                current_mass = blob.mass
+                if current_mass <= min_mass:
+                    continue  # Don't decay or increase if at/below minimum
+                new_mass = current_mass * (1.0 - MASS_DECAY_RATE)
                 if new_mass < min_mass:
                     new_mass = min_mass
                 blob.radius = math.sqrt(new_mass)
