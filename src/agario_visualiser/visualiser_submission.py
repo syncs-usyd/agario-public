@@ -50,6 +50,7 @@ class Snapshot:
     game_over: bool = False
     placement: Optional[int] = None
     total_players: int = 0
+    rankings: list[int] = field(default_factory=list)
 
 
 @dataclass
@@ -477,6 +478,7 @@ class VisualiserApp:
             self._draw_virus(canvas, x, y, screen_radius)
 
         self._draw_coordinates(canvas, camera, arena_size, pad)
+        self._draw_leaderboard(canvas, snapshot, pad)
 
         self.status_var.set(
             f"Round {snapshot.round_number + 1}/{snapshot.max_rounds or '?'}  "
@@ -497,6 +499,62 @@ class VisualiserApp:
 
         if countdown_remaining > 0:
             self._draw_countdown(canvas, countdown_remaining)
+
+    def _draw_leaderboard(
+        self,
+        canvas: object,
+        snapshot: Snapshot,
+        pad: int,
+    ) -> None:
+        if not snapshot.rankings:
+            return
+
+        visible_rankings = snapshot.rankings[:8]
+        width = 156
+        line_height = 18
+        header_height = 24
+        height = header_height + 10 + line_height * len(visible_rankings)
+        left = self.window_size - pad - width - 8
+        top = pad + 8
+
+        canvas.create_rectangle(
+            left,
+            top,
+            left + width,
+            top + height,
+            fill="#08131a",
+            outline="#1f3340",
+            width=2,
+            stipple="gray50",
+        )
+        canvas.create_text(
+            left + 10,
+            top + 12,
+            text="Leaderboard",
+            fill="#f5fffa",
+            font=("Menlo", 11, "bold"),
+            anchor="w",
+        )
+
+        for index, player_id in enumerate(visible_rankings, start=1):
+            is_self = player_id == snapshot.player_id
+            line_y = top + header_height + 4 + (index - 1) * line_height
+            canvas.create_text(
+                left + 10,
+                line_y,
+                text=f"#{index}",
+                fill="#89a7b5",
+                font=("Menlo", 10),
+                anchor="w",
+            )
+            canvas.create_text(
+                left + width - 10,
+                line_y,
+                text=f"P{player_id}{'  YOU' if is_self else ''}",
+                fill="#6ef3a5" if is_self else "#d9eef6",
+                font=("Menlo", 10, "bold" if is_self else "normal"),
+                anchor="e",
+            )
 
     def _draw_virus(
         self,
@@ -829,6 +887,7 @@ def build_snapshot(
         game_over=state.game_over if game_over is None else game_over,
         placement=placement,
         total_players=state.total_players if total_players is None else total_players,
+        rankings=list(state.rankings),
     )
 
 
@@ -851,6 +910,7 @@ def clone_snapshot(snapshot: Snapshot, *, status: str, game_over: bool = True) -
         game_over=game_over,
         placement=snapshot.placement,
         total_players=snapshot.total_players,
+        rankings=list(snapshot.rankings),
     )
 
 

@@ -12,6 +12,7 @@ class QueryMovePlayer(BaseQuery):
 
     query_type: Literal["move_player"] = "move_player"
     round: int
+    rankings: Sequence[int]
     you: PlayerModel
     view_center: tuple[float, float]
     vision_size: float

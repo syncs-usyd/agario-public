@@ -275,6 +275,7 @@ class PlayerConnection:
         query = QueryMovePlayer(
             update=self._get_record_update_dict(state, censor),
             round=state.round,
+            rankings=state.get_rankings(),
             you=state.players[self.player_id]._to_model(),
             view_center=state.get_player_view_center(self.player_id),
             vision_size=state.get_player_vision_size(self.player_id),

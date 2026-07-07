@@ -2,7 +2,6 @@ Client state is not the authoritative state: the engine side is. These state obj
 
 If you are trying to work out what a bot can actually read, start with:
 
-- `../../../docs/bot-runtime-surface.md`
 - `../game.py`
 - `../../lib/interface/queries/query_move.py`
 - `../../engine/interface/io/censor_event.py`
@@ -11,3 +10,4 @@ Two easy-to-miss details:
 
 - `game.state.map.size` is synced, but `game.state.map.foods` and `game.state.map.viruses` are not.
 - `ClientPlayer.round_died` exists on the helper object but is not currently updated by the helper mutator.
+- `game.state.rankings` is updated from the engine query each tick and is ordered by descending total mass.

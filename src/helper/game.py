@@ -23,6 +23,7 @@ class Game:
         match query:
             case QueryMovePlayer() as q:
                 self.state.round = q.round
+                self.state.rankings = list(q.rankings)
                 self.state.view_center = q.view_center
                 self.state.vision_size = q.vision_size
                 self.state.visible_food = list(q.visible_food)

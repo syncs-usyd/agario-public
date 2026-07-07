@@ -26,5 +26,6 @@ class ClientSate(GameLogic):
         self.event_history: list["EventType"] = []
         self.new_events: int = 0
         self.turn_order: list[int] = []
+        self.rankings: list[int] = []
 
         self.me: ClientPlayer

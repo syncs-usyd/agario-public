@@ -33,7 +33,6 @@ tests/
 
 If you are trying to work out what data a bot can actually read at runtime, start with:
 
-- `docs/bot-runtime-surface.md`
 - `src/helper/game.py`
 - `src/lib/interface/queries/query_move.py`
 - `src/engine/interface/io/player_connection.py`
