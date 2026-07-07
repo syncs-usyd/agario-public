@@ -300,8 +300,7 @@ def test_virus_pop_splits_blob_up_to_cap(tmp_path, monkeypatch) -> None:
 
     assert len(player.blobs) == MAX_BLOB_COUNT
     assert len(state.map.viruses) == VIRUS_COUNT
-    # Virus does NOT add mass - blob splits and conserves its original mass
-    expected_total_mass = 2.5 * 2.5  # 6.25
+    expected_total_mass = 2.5 * 2.5 + 2.0 * 2.0  # 10.25
     total_mass_after = sum(blob.mass for blob in player.blobs.values())
     assert math.isclose(total_mass_after, expected_total_mass, rel_tol=1e-9)
 

@@ -240,12 +240,13 @@ class StateMutator:
                 key=lambda item: (-item[1].radius, item[0], item[1].blob_id),
             )
             player = self.state.players[player_id]
+            total_mass_after_consumption = blob.mass + virus.radius * virus.radius
             max_piece_count = MAX_BLOB_COUNT - len(player.blobs) + 1
             piece_count = max(1, max_piece_count)
             self._split_blob_evenly(
                 player_id=player_id,
                 blob_id=blob.blob_id,
-                total_mass=blob.mass,
+                total_mass=total_mass_after_consumption,
                 piece_count=piece_count,
             )
             self.state.private_event_history.append(
