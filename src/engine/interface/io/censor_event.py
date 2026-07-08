@@ -6,6 +6,7 @@ from lib.interface.events.event_game_started import (
 )
 from lib.interface.events.event_player_eaten import EventPlayerEaten
 from lib.interface.events.event_player_moved import EventPlayerMoved
+from lib.interface.events.moves.move_player import MovePlayer
 from lib.interface.events.typing import EventType
 
 if TYPE_CHECKING:
@@ -76,6 +77,10 @@ class CensorEvent:
                         e.eaten_pos[1],
                     )
                 ):
+                    return e
+                return None
+            case MovePlayer() as e:
+                if e.player_id == player_id:
                     return e
                 return None
 
