@@ -25,6 +25,7 @@ from lib.interface.events.moves.move_player import MovePlayer
 
 from random import sample
 import shutil
+import os
 
 
 class GameEngine:
@@ -117,27 +118,24 @@ class GameEngine:
         ) as f:
             f.write(visualiser_data)
 
-        def copy_stdout_stderr_player(player: int) -> None:
-            stderr_path = f"{CORE_DIRECTORY}/submission{player}/io/submission.err"
-            stderr_path_new = f"{CORE_DIRECTORY}/output/submission_{player}.err"
-            stdout_path = f"{CORE_DIRECTORY}/submission{player}/io/submission.log"
-            stdout_path_new = f"{CORE_DIRECTORY}/output/submission_{player}.log"
-
-            try:
-                shutil.copy(stderr_path, stderr_path_new, follow_symlinks=False)
-            except (FileNotFoundError, IsADirectoryError, FileExistsError):
-                with open(stderr_path_new, "w") as f:
-                    f.write(
-                        "Your submission.err file is either missing or is a directory."
-                    )
-
-            try:
-                shutil.copy(stdout_path, stdout_path_new, follow_symlinks=False)
-            except (FileNotFoundError, IsADirectoryError, FileExistsError):
-                with open(stdout_path_new, "w") as f:
-                    f.write(
-                        "Your submission.log file is either missing or is a directory."
-                    )
+        def copy_stdout_stderr_player(player: int) -> None:                                                                            
+            stderr_path = f"{CORE_DIRECTORY}/submission{player}/io/submission.err"                                                     
+            stderr_path_new = f"{CORE_DIRECTORY}/output/submission_{player}.err"                                                       
+            stdout_path = f"{CORE_DIRECTORY}/submission{player}/io/submission.log"                                                     
+            stdout_path_new = f"{CORE_DIRECTORY}/output/submission_{player}.log"                                                       
+                                                                                                                                        
+            for src, dst in [(stderr_path, stderr_path_new), (stdout_path, stdout_path_new)]:                                          
+                # NEW: Reject symlinks before copying                                                                                  
+                if os.path.islink(src):                                                                                                
+                    with open(dst, "w") as f:                                                                                          
+                        f.write("Your log file was rejected: symlinks are not allowed.")                                               
+                    continue                                                                                                           
+                                                                                                                                        
+                try:                                                                                                                   
+                    shutil.copy(src, dst, follow_symlinks=False)                                                                       
+                except (FileNotFoundError, IsADirectoryError, FileExistsError):                                                        
+                    with open(dst, "w") as f:                                                                                          
+                        f.write("Your log file is either missing or is a directory.")
 
         # Only copy for the player who was banned, otherwise copy for all players, or only copy the log
         # if the match was cancelled.
