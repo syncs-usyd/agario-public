@@ -1,6 +1,6 @@
 [project]
 name = "agario-kit"
-version = "2026.1.10"
+version = "2026.1.11"
 description = "Public Agar.io competition package"
 readme = "README.md"
 requires-python = ">=3.12"
