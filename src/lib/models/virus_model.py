@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from lib.base_model import FiniteBaseModel
 
 
-class VirusModel(BaseModel):
+class VirusModel(FiniteBaseModel):
     virus_id: int
     pos: tuple[float, float]
     radius: float

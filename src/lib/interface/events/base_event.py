@@ -1,5 +1,5 @@
-from pydantic import BaseModel
+from lib.base_model import FiniteBaseModel
 
 
-class BaseEvent(BaseModel):
+class BaseEvent(FiniteBaseModel):
     event_type: str

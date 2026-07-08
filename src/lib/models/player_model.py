@@ -1,21 +1,22 @@
-from pydantic import BaseModel
+from lib.base_model import FiniteBaseModel
 
 from lib.models.blob_model import BlobModel
 
 
-class RelativeFoodModel(BaseModel):
+class RelativeFoodModel(FiniteBaseModel):
     dx: float
     dy: float
 
 
-class VisiblePlayerModel(BaseModel):
+class VisiblePlayerModel(FiniteBaseModel):
     player_id: int
     dx: float
     dy: float
     radius: float
     alive: bool
 
-class PlayerModel(BaseModel):
+
+class PlayerModel(FiniteBaseModel):
     player_id: int
     team_id: int
     pos: tuple[float, float]
@@ -30,6 +31,6 @@ class PlayerModel(BaseModel):
         )
 
 
-class PublicPlayerModel(BaseModel):
+class PublicPlayerModel(FiniteBaseModel):
     player_id: int
     alive: bool

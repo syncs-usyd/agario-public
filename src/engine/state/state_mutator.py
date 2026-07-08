@@ -66,10 +66,14 @@ class StateMutator:
         )
 
     def _normalise_vector(self, dx: float, dy: float) -> tuple[float, float]:
-        magnitude = math.hypot(dx, dy)
-        if magnitude == 0:
+        max_component = max(abs(dx), abs(dy))
+        if not math.isfinite(max_component) or max_component == 0.0:
             return (0.0, 0.0)
-        return (dx / magnitude, dy / magnitude)
+        # Scale first so subnormal inputs do not collapse into a non-unit vector.
+        scaled_x = dx / max_component
+        scaled_y = dy / max_component
+        magnitude = math.hypot(scaled_x, scaled_y)
+        return (scaled_x / magnitude, scaled_y / magnitude)
 
     def _blob_direction_for_split(self, dx: float, dy: float) -> tuple[float, float]:
         unit_x, unit_y = self._normalise_vector(dx, dy)

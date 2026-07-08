@@ -1,7 +1,9 @@
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
+
+from lib.base_model import FiniteBaseModel
 
 
-class DirectionModel(BaseModel):
+class DirectionModel(FiniteBaseModel):
     x: float | None = None
     y: float | None = None
     degrees: float | None = None
@@ -29,7 +31,7 @@ class DirectionModel(BaseModel):
 
 
 # Kept for backwards compatibility with older internal modules that may still import it.
-class PenguinModel(BaseModel):
+class PenguinModel(FiniteBaseModel):
     player_id: int
     penguin_id: int
     pos: tuple[float, float]

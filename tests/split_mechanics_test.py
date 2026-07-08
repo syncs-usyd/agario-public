@@ -140,6 +140,43 @@ def test_same_player_cooldown_blocks_merge_until_ready(tmp_path, monkeypatch) ->
     assert math.isclose(merged_blob.radius, math.sqrt(2.0), rel_tol=1e-9)
 
 
+def test_subnormal_direction_moves_at_normal_speed(tmp_path, monkeypatch) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    mutator = StateMutator(state)
+    player = state.players[0]
+    state.map.foods = []
+    state.map.viruses = []
+
+    for other_id, other in state.players.items():
+        if other_id != player.id:
+            other.blobs.clear()
+
+    start_x = 20.0
+    start_y = 20.0
+    player.blobs = {
+        0: BlobState(blob_id=0, x=start_x, y=start_y, radius=2.0),
+    }
+
+    speed = mutator._movement_speed(player.blobs[0].radius)
+    mutator.commit_round(
+        [
+            MovePlayer(
+                player_id=player.id,
+                direction=DirectionModel(x=5e-324, y=5e-324),
+            )
+        ]
+    )
+
+    moved_blob = player.blobs[0]
+    delta_x = moved_blob.x - start_x
+    delta_y = moved_blob.y - start_y
+    expected_component = speed / math.sqrt(2.0)
+
+    assert math.isclose(math.hypot(delta_x, delta_y), speed, rel_tol=1e-9)
+    assert math.isclose(delta_x, expected_component, rel_tol=1e-9)
+    assert math.isclose(delta_y, expected_component, rel_tol=1e-9)
+
+
 def test_view_center_and_visibility_use_player_centroid(tmp_path, monkeypatch) -> None:
     state = _make_state(tmp_path, monkeypatch)
     player = state.players[0]

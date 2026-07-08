@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from lib.base_model import FiniteBaseModel
 
 
-class BlobModel(BaseModel):
+class BlobModel(FiniteBaseModel):
     blob_id: int
     pos: tuple[float, float]
     radius: float
