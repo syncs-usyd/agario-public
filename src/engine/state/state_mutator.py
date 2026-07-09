@@ -425,7 +425,7 @@ class StateMutator:
             )
 
     def _can_eat_blob(self, eater: BlobState, target: BlobState) -> bool:
-        if eater.radius < target.radius * EAT_SIZE_RATIO:
+        if eater.mass < target.mass * EAT_SIZE_RATIO:
             return False
         return (
             (eater.x - target.x) ** 2 + (eater.y - target.y) ** 2
