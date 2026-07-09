@@ -13,6 +13,7 @@ from lib.config.arena import (
 )
 from lib.config.player import SAME_PLAYER_OVERLAP_EPSILON, SPLIT_MIN_MASS
 from lib.interface.events.moves.move_player import MovePlayer
+from lib.models.food_model import FoodModel
 from lib.models.penguin_model import DirectionModel
 import engine.state.state_mutator as state_mutator_module
 
@@ -377,3 +378,69 @@ def test_virus_does_not_pop_when_blob_is_not_large_enough(tmp_path, monkeypatch)
     assert len(state.map.viruses) == VIRUS_COUNT
     total_mass_after = sum(blob.mass for blob in player.blobs.values())
     assert math.isclose(total_mass_after, total_mass_before, rel_tol=1e-9)
+
+
+def test_food_growth_is_clamped_to_arena_same_round(tmp_path, monkeypatch) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    mutator = StateMutator(state)
+    player = state.players[0]
+    state.map.foods = []
+    state.map.viruses = []
+
+    for other_id, other in state.players.items():
+        if other_id != player.id:
+            other.blobs.clear()
+
+    player.blobs = {
+        0: BlobState(blob_id=0, x=0.9, y=10.0, radius=0.9),
+    }
+    state.map.foods = [FoodModel(food_id=0, pos=(0.9, 10.0))]
+
+    mutator.commit_round(
+        [
+            MovePlayer(
+                player_id=player.id,
+                direction=DirectionModel(x=0.0, y=0.0),
+            )
+        ]
+    )
+
+    blob = player.blobs[0]
+    assert math.isclose(blob.x, blob.radius, rel_tol=1e-9)
+
+
+def test_player_growth_is_clamped_to_arena_same_round(tmp_path, monkeypatch) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    mutator = StateMutator(state)
+    eater = state.players[0]
+    target = state.players[1]
+    state.map.foods = []
+    state.map.viruses = []
+
+    for other_id, other in state.players.items():
+        if other_id not in {eater.id, target.id}:
+            other.blobs.clear()
+
+    eater.blobs = {
+        0: BlobState(blob_id=0, x=1.0, y=10.0, radius=1.0),
+    }
+    target.blobs = {
+        0: BlobState(blob_id=0, x=1.0, y=10.0, radius=0.5),
+    }
+
+    mutator.commit_round(
+        [
+            MovePlayer(
+                player_id=eater.id,
+                direction=DirectionModel(x=0.0, y=0.0),
+            ),
+            MovePlayer(
+                player_id=target.id,
+                direction=DirectionModel(x=0.0, y=0.0),
+            ),
+        ]
+    )
+
+    blob = eater.blobs[0]
+    assert math.isclose(blob.x, blob.radius, rel_tol=1e-9)
+    assert not target.alive

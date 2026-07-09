@@ -410,6 +410,7 @@ class StateMutator:
                 key=lambda item: (-item[1].radius, item[0], item[1].blob_id),
             )
             eater_blob.radius = self._combine_radii(eater_blob.radius, FOOD_RADIUS)
+            self._clamp_blob_to_arena(eater_blob)
             eaten_by_blob.setdefault((eater_id, eater_blob.blob_id), []).append(food.food_id)
 
         self.state.map.foods = remaining_foods
@@ -472,6 +473,7 @@ class StateMutator:
                         eater_blob.radius,
                         target_blob.radius,
                     )
+                    self._clamp_blob_to_arena(eater_blob)
                     del target_player.blobs[target_blob_id]
                     if not target_player.alive:
                         target_player.round_died = self.state.round
