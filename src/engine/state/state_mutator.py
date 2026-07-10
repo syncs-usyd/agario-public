@@ -209,10 +209,9 @@ class StateMutator:
         virus_y: float,
         virus_radius: float,
     ) -> bool:
-        combined_radius = blob.radius + virus_radius
         return (
             (blob.x - virus_x) ** 2 + (blob.y - virus_y) ** 2
-            <= combined_radius * combined_radius
+            <= blob.radius * blob.radius
         )
 
     def _can_consume_virus(self, blob: BlobState, virus_radius: float) -> bool:

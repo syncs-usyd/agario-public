@@ -380,6 +380,40 @@ def test_virus_does_not_pop_when_blob_is_not_large_enough(tmp_path, monkeypatch)
     assert math.isclose(total_mass_after, total_mass_before, rel_tol=1e-9)
 
 
+def test_virus_does_not_pop_on_partial_overlap_without_center_containment(
+    tmp_path, monkeypatch
+) -> None:
+    state = _make_state(tmp_path, monkeypatch)
+    mutator = StateMutator(state)
+    player = state.players[0]
+    state.map.foods = []
+    state.map.viruses = []
+
+    for other_id, other in state.players.items():
+        if other_id != player.id:
+            other.blobs.clear()
+
+    player.blobs = {
+        0: BlobState(blob_id=0, x=20.0, y=20.0, radius=2.5),
+    }
+    original_virus = state.map.spawn_virus(pos=(24.0, 20.0), radius=2.0)
+
+    total_mass_before = sum(blob.mass for blob in player.blobs.values())
+    mutator.commit_round(
+        [
+            MovePlayer(
+                player_id=player.id,
+                direction=DirectionModel(x=0.0, y=0.0),
+            )
+        ]
+    )
+
+    assert len(player.blobs) == 1
+    assert original_virus.virus_id in {virus.virus_id for virus in state.map.viruses}
+    total_mass_after = sum(blob.mass for blob in player.blobs.values())
+    assert math.isclose(total_mass_after, total_mass_before, rel_tol=1e-9)
+
+
 def test_food_growth_is_clamped_to_arena_same_round(tmp_path, monkeypatch) -> None:
     state = _make_state(tmp_path, monkeypatch)
     mutator = StateMutator(state)

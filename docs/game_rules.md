@@ -70,6 +70,7 @@ The engine normalizes the direction and applies movement using the configured ba
 - The arena maintains a fixed virus count (default 3).
 - Viruses have a fixed radius (default 1.5).
 - A blob can only consume a virus if its mass is at least 20% larger than the virus's mass.
+- The virus's center must lie inside the blob's radius.
 - When a blob consumes a virus:
   - The virus's mass is added to the blob.
   - The blob is forcibly split into multiple pieces (up to the maximum blob count of 16).
