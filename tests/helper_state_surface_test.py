@@ -16,6 +16,9 @@ def test_client_state_exposes_me_but_not_players() -> None:
     state = ClientSate()
 
     assert not hasattr(state, "players")
+    assert state.map_size == 0.0
+    assert not hasattr(state.map, "foods")
+    assert not hasattr(state.map, "viruses")
 
 
 def test_public_game_started_populates_me_and_total_players() -> None:
@@ -50,6 +53,7 @@ def test_public_game_started_populates_me_and_total_players() -> None:
     assert state.me.x == 12.0
     assert state.me.y == 18.0
     assert state.me.radius == 3.5
+    assert state.map_size == 60.0
     assert not hasattr(state, "players")
 
 

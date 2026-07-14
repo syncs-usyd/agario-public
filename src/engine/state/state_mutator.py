@@ -487,6 +487,7 @@ class StateMutator:
                             eaten_blob_id=target_blob_id,
                             eaten_pos=eaten_pos,
                             eater_radius=eater_blob.radius,
+                            eaten_radius=target_blob.radius,
                             eaten_player_alive=target_player.alive,
                         )
                     )

@@ -1,5 +1,4 @@
 from lib.game.game_logic import GameLogic
-from lib.interact.map import Map
 from lib.interface.events.typing import EventType
 from lib.models.blob_model import VisibleBlobModel
 from lib.models.food_model import FoodModel
@@ -7,11 +6,16 @@ from lib.models.virus_model import VirusModel
 from helper.state.client_player_state import ClientPlayer
 
 
+class ClientMapView:
+    def __init__(self) -> None:
+        self.size = 0.0
+
+
 class ClientSate(GameLogic):
     def __init__(self) -> None:
         self.round = -1
         self.max_rounds = 0
-        self.map = Map()
+        self.map = ClientMapView()
         self.vision_size = 0.0
         self.view_center = (0.0, 0.0)
         self.turn_duration_seconds = 0.0
@@ -29,3 +33,7 @@ class ClientSate(GameLogic):
         self.rankings: list[int] = []
 
         self.me: ClientPlayer
+
+    @property
+    def map_size(self) -> float:
+        return self.map.size

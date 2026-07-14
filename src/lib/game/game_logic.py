@@ -1,11 +1,13 @@
-from lib.interact.map import Map
-
 from collections import defaultdict, deque
 from typing import Callable, Iterator, Protocol
 
 
+class ArenaView(Protocol):
+    size: float
+
+
 class SharedGameState(Protocol):
-    map: Map
+    map: ArenaView
 
 
 class GameLogic(SharedGameState):

@@ -215,6 +215,12 @@ class GameState(GameLogic):
                 visible_food.append(food)
         return visible_food
 
+    def get_public_visible_food(self, player_id: int) -> list[FoodModel]:
+        return [
+            FoodModel(food_id=index, pos=food.pos)
+            for index, food in enumerate(self.get_visible_food(player_id))
+        ]
+
     def get_visible_viruses(self, player_id: int) -> list[VirusModel]:
         if not self.players[player_id].alive:
             return []
@@ -229,6 +235,12 @@ class GameState(GameLogic):
                 visible_viruses.append(virus)
         return visible_viruses
 
+    def get_public_visible_viruses(self, player_id: int) -> list[VirusModel]:
+        return [
+            VirusModel(virus_id=index, pos=virus.pos, radius=virus.radius)
+            for index, virus in enumerate(self.get_visible_viruses(player_id))
+        ]
+
     def get_visible_player_blobs(
         self, target_id: int, viewer_id: int
     ) -> list[BlobModel]:
@@ -239,6 +251,29 @@ class GameState(GameLogic):
         for blob in target.sorted_blobs():
             if self.player_can_see_circle(viewer_id, blob.x, blob.y, blob.radius):
                 visible_blobs.append(blob._to_model())
+        return visible_blobs
+
+    def get_public_visible_player_blobs(
+        self, target_id: int, viewer_id: int
+    ) -> list[VisibleBlobModel]:
+        target = self.players[target_id]
+        if not target.alive:
+            return []
+        visible_blobs: list[VisibleBlobModel] = []
+        public_blob_id = 0
+        for blob in target.sorted_blobs():
+            if self.player_can_see_circle(viewer_id, blob.x, blob.y, blob.radius):
+                visible_blobs.append(
+                    VisibleBlobModel(
+                        player_id=target.id,
+                        team_id=target.team_id,
+                        blob_id=public_blob_id,
+                        pos=(blob.x, blob.y),
+                        radius=blob.radius,
+                        merge_cooldown=blob.merge_cooldown,
+                    )
+                )
+                public_blob_id += 1
         return visible_blobs
 
     def get_visible_blobs(self, player_id: int) -> list[VisibleBlobModel]:
@@ -261,6 +296,18 @@ class GameState(GameLogic):
                             team_id=other.team_id,
                         )
                     )
+        return visible_players
+
+    def get_public_visible_blobs(self, player_id: int) -> list[VisibleBlobModel]:
+        if not self.players[player_id].alive:
+            return []
+        visible_players: list[VisibleBlobModel] = []
+        for other in self.players.values():
+            if other.id == player_id or not other.alive:
+                continue
+            visible_players.extend(
+                self.get_public_visible_player_blobs(other.id, player_id)
+            )
         return visible_players
 
     def player_is_visible_to(self, target_id: int, viewer_id: int) -> bool:

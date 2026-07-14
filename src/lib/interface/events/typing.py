@@ -8,7 +8,10 @@ from lib.interface.events.event_game_started import (
     EventGameStarted,
     PublicEventGameStarted,
 )
-from lib.interface.events.event_player_eaten import EventPlayerEaten
+from lib.interface.events.event_player_eaten import (
+    EventPlayerEaten,
+    PublicEventPlayerEaten,
+)
 from lib.interface.events.event_player_bannned import EventPlayerBanned
 from lib.interface.events.event_player_moved import EventPlayerMoved
 from lib.interface.events.event_player_won import EventPlayerWon
@@ -23,6 +26,7 @@ EventType: TypeAlias = Annotated[
     Union[
         EventPlayerMoved,
         EventPlayerEaten,
+        PublicEventPlayerEaten,
         EventFoodSpawned,
         EventFoodEaten,
         EventVirusSpawned,
