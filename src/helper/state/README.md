@@ -8,6 +8,6 @@ If you are trying to work out what a bot can actually read, start with:
 
 Two easy-to-miss details:
 
-- `game.state.map.size` is synced, but `game.state.map.foods` and `game.state.map.viruses` are not.
+- `game.state.map` is only a size view. Use `game.state.map.size` or `game.state.map_size`; it does not expose foods, viruses, or spawn helpers.
 - `ClientPlayer.round_died` exists on the helper object but is not currently updated by the helper mutator.
 - `game.state.rankings` is updated from the engine query each tick and is ordered by descending total mass.

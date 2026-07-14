@@ -2,7 +2,10 @@ from helper.client_state import ClientSate
 from helper.state.client_player_state import ClientPlayer
 
 from lib.interface.events.event_player_bannned import EventPlayerBanned
-from lib.interface.events.event_player_eaten import EventPlayerEaten
+from lib.interface.events.event_player_eaten import (
+    EventPlayerEaten,
+    PublicEventPlayerEaten,
+)
 from lib.interface.events.event_player_moved import EventPlayerMoved
 from lib.interface.events.event_player_won import EventPlayerWon
 from lib.interface.events.event_game_ended import (
@@ -56,7 +59,7 @@ class StateMutator:
                 self.state.game_over = True
                 self.state.winner_player_id = e.player_id
 
-            case EventPlayerMoved() | EventPlayerEaten():
+            case EventPlayerMoved() | EventPlayerEaten() | PublicEventPlayerEaten():
                 pass
 
             case MovePlayer() as e:

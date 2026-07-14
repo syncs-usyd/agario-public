@@ -4,7 +4,10 @@ from lib.interface.events.event_game_started import (
     EventGameStarted,
     PublicEventGameStarted,
 )
-from lib.interface.events.event_player_eaten import EventPlayerEaten
+from lib.interface.events.event_player_eaten import (
+    EventPlayerEaten,
+    PublicEventPlayerEaten,
+)
 from lib.interface.events.event_player_moved import EventPlayerMoved
 from lib.interface.events.moves.move_player import MovePlayer
 from lib.interface.events.typing import EventType
@@ -39,13 +42,7 @@ class CensorEvent:
                     return e
 
                 visible_blobs = tuple(
-                    blob
-                    for blob in e.blobs
-                    if self.state.player_can_see_point(
-                        player_id,
-                        blob.pos[0],
-                        blob.pos[1],
-                    )
+                    self.state.get_public_visible_player_blobs(e.player_id, player_id)
                 )
                 if visible_blobs:
                     total_mass = sum(blob.radius * blob.radius for blob in visible_blobs)
@@ -64,20 +61,27 @@ class CensorEvent:
                     )
                 return None
             case EventPlayerEaten() as e:
-                if (
-                    player_id in (e.eater_player_id, e.eaten_player_id)
-                    or self.state.player_can_see_point(
-                        player_id,
-                        e.eater_pos[0],
-                        e.eater_pos[1],
+                eater_visible = player_id == e.eater_player_id or self.state.player_can_see_circle(
+                    player_id,
+                    e.eater_pos[0],
+                    e.eater_pos[1],
+                    e.eater_radius,
+                )
+                eaten_visible = player_id == e.eaten_player_id or self.state.player_can_see_circle(
+                    player_id,
+                    e.eaten_pos[0],
+                    e.eaten_pos[1],
+                    e.eaten_radius,
+                )
+                if eater_visible or eaten_visible:
+                    return PublicEventPlayerEaten(
+                        eater_player_id=e.eater_player_id if eater_visible else None,
+                        eater_pos=e.eater_pos if eater_visible else None,
+                        eater_radius=e.eater_radius if eater_visible else None,
+                        eaten_player_id=e.eaten_player_id if eaten_visible else None,
+                        eaten_pos=e.eaten_pos if eaten_visible else None,
+                        eaten_radius=e.eaten_radius if eaten_visible else None,
                     )
-                    or self.state.player_can_see_point(
-                        player_id,
-                        e.eaten_pos[0],
-                        e.eaten_pos[1],
-                    )
-                ):
-                    return e
                 return None
             case MovePlayer() as e:
                 if e.player_id == player_id:

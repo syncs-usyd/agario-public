@@ -255,17 +255,17 @@ class PlayerConnection:
     def _get_record_update_dict(
         self, state: "GameState", censor: CensorEvent
     ) -> dict[int, EventType]:
-        # if self._record_update_watermark >= len(state.event_history):
-        #     raise RuntimeError(
-        #         "Record update watermark out of sync with state, did you try to send two queries without committing the first?"
-        #     )
         result = {}
-        for i, event in islice(
-            enumerate(state.event_history), self._record_update_watermark, None
+        public_index = 0
+        for _, event in islice(
+            enumerate(state.event_history),
+            self._record_update_watermark,
+            None,
         ):
             censored_event = censor.censor(event, self.player_id)
             if censored_event is not None:
-                result[i] = censored_event
+                result[public_index] = censored_event
+                public_index += 1
         self._record_update_watermark = len(state.event_history)
         return result
 
@@ -279,8 +279,8 @@ class PlayerConnection:
             you=state.players[self.player_id]._to_model(),
             view_center=state.get_player_view_center(self.player_id),
             vision_size=state.get_player_vision_size(self.player_id),
-            visible_food=state.get_visible_food(self.player_id),
-            visible_blobs=state.get_visible_blobs(self.player_id),
-            visible_viruses=state.get_visible_viruses(self.player_id),
+            visible_food=state.get_public_visible_food(self.player_id),
+            visible_blobs=state.get_public_visible_blobs(self.player_id),
+            visible_viruses=state.get_public_visible_viruses(self.player_id),
         )
         return self._query_move(query, MovePlayer, validator)
