@@ -3,7 +3,6 @@
 from pydantic import TypeAdapter, ValidationError
 from engine.config.io_config import (
     CORE_DIRECTORY,
-    CUMULATIVE_TIMEOUT_SECONDS,
     OPEN_PIPE_TIMEOUT_SECONDS,
     PIPE_LEN_DELIM,
     MAX_CHARACTERS_READ,
@@ -14,7 +13,6 @@ from engine.config.io_config import (
 
 from engine.interface.io.exceptions import (
     BrokenPipeException,
-    CumulativeTimeoutException,
     InvalidMessageException,
     InvalidMoveException,
     TimeoutException,
@@ -34,7 +32,6 @@ from io import TextIOWrapper
 import json
 from math import log10, floor
 from signal import SIGALRM, alarm, signal
-from time import time
 from itertools import islice
 from typing import (
     TYPE_CHECKING,
@@ -124,18 +121,10 @@ def time_limited(
             signal(SIGALRM, on_timeout_alarm)
 
             alarm(OPEN_PIPE_TIMEOUT_SECONDS if initial else TIMEOUT_SECONDS)
-            start = time()
-
-            result = fn(*args, **kwargs)
-
-            end = time()
-            alarm(0)
-
-            self._cumulative_time += end - start
-            if self._cumulative_time > CUMULATIVE_TIMEOUT_SECONDS:
-                raise CumulativeTimeoutException(self.player_id, error_message, query)
-
-            return result
+            try:
+                return fn(*args, **kwargs)
+            finally:
+                alarm(0)
 
         return dfn2
 
@@ -152,7 +141,6 @@ class PlayerConnection:
         self.player_id: int = player_id
         self._to_engine_pipe: TextIOWrapper
         self._from_engine_pipe: TextIOWrapper
-        self._cumulative_time: float = 0
         self._record_update_watermark: int = 0
 
         self._open_pipes()

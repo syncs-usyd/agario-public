@@ -17,8 +17,8 @@ class TimeoutException(PlayerException):
 
 
 class CumulativeTimeoutException(PlayerException):
-    def __init__(self, player_id: int, error_message: str, query: Optional[QueryType]):
-        super().__init__(player_id, error_message, query)
+    def __init__(self, player_id: int, error_message: str, details: Optional[Any]):
+        super().__init__(player_id, error_message, details)
 
 
 class BrokenPipeException(PlayerException):
