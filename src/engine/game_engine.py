@@ -4,6 +4,7 @@ from agario_kit import get_engine_version
 from lib.config.arena import NUM_PLAYERS, MAX_ROUNDS, TURN_DURATION_SECONDS, VISION_SIZE
 from engine.interface.io.censor_event import CensorEvent
 from engine.interface.io.exceptions import PlayerException
+from engine.interface.io.process_groups import ProcessGroupController
 from engine.interface.io.game_result import (
     GameBanResult,
     GameCancelledResult,
@@ -37,17 +38,36 @@ class GameEngine:
         self.validator = MoveValidator(self.state)
         self.mutator = StateMutator(self.state)
         self.censor = CensorEvent(self.state)
+        self.process_groups = ProcessGroupController.from_core_directory()
         self.realtime = realtime
 
     def start(self) -> None:
         try:
-            self.state._connect_players()
+            self._connect_players()
             self.run_game()
         except PlayerException as e:
             event = event_banned_factory(e)
             self.mutator.commit(event)
         finally:
+            self.process_groups.pause_all()
             self.finish()
+
+    def _connect_players(self) -> None:
+        for player_id, player in self.state.players.items():
+            player.connect()
+            self.process_groups.pause_player(player_id)
+
+    def _query_move_for_player(self, player_id: int) -> MovePlayer:
+        player = self.state.players[player_id]
+        self.process_groups.resume_player(player_id)
+        try:
+            return player.connection.query_move_player(
+                self.state,
+                self.validator,
+                self.censor,
+            )
+        finally:
+            self.process_groups.pause_player(player_id)
 
     def run_game(self) -> None:
         assert NUM_PLAYERS == len(self.state.players)
@@ -80,11 +100,7 @@ class GameEngine:
             for player_id in turn_order:
                 player = self.state.players[player_id]
                 if player.alive:
-                    response = player.connection.query_move_player(
-                        self.state,
-                        self.validator,
-                        self.censor,
-                    )
+                    response = self._query_move_for_player(player_id)
                     moves.append(response)
             self.mutator.commit_round(moves)
 

@@ -19,6 +19,7 @@ from lib.config.arena import NUM_PLAYERS
 PIPE_PERMISSIONS = 0o660
 DIRECTORY_PERMISSIONS = 0o775
 START_DELAY_SECONDS = 3.0
+PROCESS_GROUPS_FILENAME = "submission_process_groups.json"
 
 
 def default_submission_path() -> Path:
@@ -170,6 +171,7 @@ def start_submissions(
     env = runtime_env(workspace_root)
     processes: list[subprocess.Popen[str]] = []
     is_visualiser_process: list[bool] = []
+    process_groups: list[dict[str, int]] = []
 
     for player, script_path in enumerate(submission_paths):
         submission_root = workspace_root / f"submission{player}"
@@ -198,10 +200,15 @@ def start_submissions(
                 stdout=stdout_file,
                 stderr=stderr_file,
                 text=True,
+                start_new_session=True,
             )
         processes.append(process)
         is_visualiser_process.append(is_visualiser)
+        process_groups.append({"player_id": player, "pgid": process.pid})
         print(f"[visualiser-launcher] started submission {player} (pid={process.pid}).")
+
+    with open(workspace_root / PROCESS_GROUPS_FILENAME, "w") as process_groups_file:
+        json.dump(process_groups, process_groups_file)
 
     return [
         (process.pid, is_visualiser)
@@ -269,7 +276,7 @@ def run_mode(mode: str) -> None:
                 )
                 continue
             try:
-                os.kill(pid, SIGKILL)
+                os.killpg(pid, SIGKILL)
                 print(f"[visualiser-launcher] terminated submission pid {pid}.")
             except ProcessLookupError:
                 pass

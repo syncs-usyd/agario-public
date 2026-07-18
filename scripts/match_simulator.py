@@ -13,6 +13,7 @@ from lib.config.arena import NUM_PLAYERS
 PIPE_PERMISSIONS = 0o660
 FILE_PERMISSIOSN = 0o664
 DIRECTORY_PERMISSIONS = 0o775
+PROCESS_GROUPS_FILENAME = "submission_process_groups.json"
 
 
 def main():
@@ -45,7 +46,10 @@ def main():
 
     for pid in submission_pids:
         print(f"[simulator]: terminating submission pid {pid}.")
-        os.kill(pid, SIGKILL)
+        try:
+            os.killpg(pid, SIGKILL)
+        except ProcessLookupError:
+            pass
 
     print("[simulator] simulation complete.")
 
@@ -112,6 +116,7 @@ def setup_environments(sources: list[Tuple[int, str]]):
 
 def start_submissions() -> list[int]:
     player_pids = []
+    process_groups = []
     for player in range(NUM_PLAYERS):
         os.chdir(f"submission{player}")
 
@@ -120,12 +125,19 @@ def start_submissions() -> list[int]:
             open("io/submission.err", "w") as f_err,
         ):
             process = subprocess.Popen(
-                ["python3", "submission.py"], stdout=f_log, stderr=f_err
+                ["python3", "submission.py"],
+                stdout=f_log,
+                stderr=f_err,
+                start_new_session=True,
             )
 
         player_pids.append(process.pid)
+        process_groups.append({"player_id": player, "pgid": process.pid})
         print(f"[simulator]: started submission {player} (pid={process.pid}).")
         os.chdir("..")
+
+    with open(PROCESS_GROUPS_FILENAME, "w") as process_groups_file:
+        json.dump(process_groups, process_groups_file)
 
     return player_pids
 
