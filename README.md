@@ -14,21 +14,6 @@ infrastructure use:
 - `engine`: the authoritative game engine
 - `agario_visualiser`: local match launcher and first-person visualiser
 
-## Layout
-
-```text
-src/
-  agario_kit/
-  agario_visualiser/
-  engine/
-  helper/
-  lib/
-examples/
-  submissions/
-docs/
-tests/
-```
-
 ## If you are writing a bot
 
 If you are trying to work out what data a bot can actually read at runtime, start with:

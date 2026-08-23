@@ -1,7 +1,7 @@
 from typing import final
 import math
 
-from lib.models.penguin_model import PenguinModel
+from lib.models.direction_model import PenguinModel
 from lib.config.player import MAX_MAGNITUDE
 
 class Direction:
@@ -36,11 +36,11 @@ class Penguin:
         self.vy = 0
     
     @classmethod
-    def from_model(cls, penguin_model: "PenguinModel") -> "Penguin":
+    def from_model(cls, direction_model: "PenguinModel") -> "Penguin":
         return cls(
-            penguin_model.player_id,
-            penguin_model.penguin_id,
-            penguin_model.pos,
+            direction_model.player_id,
+            direction_model.penguin_id,
+            direction_model.pos,
         )
     
     @final

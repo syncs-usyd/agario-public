@@ -21,7 +21,7 @@ import helper.game as helper_game
 from helper.game import Game
 from lib.interface.events.moves.move_player import MovePlayer
 from lib.interface.events.moves.typing import MoveType
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 
 
 DEFAULT_SUBMISSION = Path(

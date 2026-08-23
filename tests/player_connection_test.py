@@ -5,7 +5,7 @@ from engine.interface.io.player_connection import PlayerConnection
 from engine.state.game_state import GameState
 from lib.config.arena import NUM_PLAYERS
 from lib.interface.events.moves.move_player import MovePlayer
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 
 
 def _make_state(tmp_path, monkeypatch) -> GameState:

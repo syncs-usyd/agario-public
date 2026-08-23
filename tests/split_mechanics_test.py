@@ -14,7 +14,7 @@ from lib.config.arena import (
 from lib.config.player import SAME_PLAYER_OVERLAP_EPSILON, SPLIT_MIN_MASS
 from lib.interface.events.moves.move_player import MovePlayer
 from lib.models.food_model import FoodModel
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 import engine.state.state_mutator as state_mutator_module
 
 

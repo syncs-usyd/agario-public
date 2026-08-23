@@ -10,7 +10,7 @@ from lib.interface.events.event_player_eaten import (
 )
 from lib.interface.events.event_player_moved import EventPlayerMoved
 from lib.interface.events.moves.move_player import MovePlayer
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 
 
 def _make_state(tmp_path, monkeypatch) -> GameState:

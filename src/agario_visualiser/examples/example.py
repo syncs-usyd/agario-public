@@ -3,7 +3,7 @@ from lib.interface.events.moves.move_player import MovePlayer
 from lib.interface.events.moves.typing import MoveType
 from lib.interface.queries.query_move import QueryMovePlayer
 from lib.interface.queries.typing import QueryType
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 
 
 def choose_direction(game: Game) -> tuple[float, float]:

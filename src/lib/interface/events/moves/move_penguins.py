@@ -1,5 +1,5 @@
 from lib.interface.events.moves.base_move import BaseMove
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 
 from typing import Literal
 

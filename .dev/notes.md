@@ -15,3 +15,7 @@ git push origin main
 git tag v2026.1.1
 git push origin v2026.1.1
 ```
+
+## The git workflows
+`ci.yml` runs on every push to main and tests the repo works properly and then pushes the runner. We didn't end up using it much but thought we'd keep it.
+`publish.yml` runs on every tag that starts with a "v", and pushes to PyPi. We used it (see notes above).

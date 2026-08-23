@@ -7,7 +7,7 @@ from lib.interface.events.moves.move_player import MovePlayer
 from lib.interface.queries.query_move import QueryMovePlayer
 from lib.models.blob_model import BlobModel
 from lib.models.food_model import FoodModel
-from lib.models.penguin_model import DirectionModel
+from lib.models.direction_model import DirectionModel
 from lib.models.player_model import PlayerModel
 from lib.models.virus_model import VirusModel
 
